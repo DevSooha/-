@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 public class EnemyCombat : MonoBehaviour
@@ -6,39 +7,46 @@ public class EnemyCombat : MonoBehaviour
     public float knockbackForce = 20f;
     public float stunTime = 0.2f;
     public int damageAmount = 2;
-    public float attackCooldown = 2f;  // ✅ public으로 변경
-    public float attackDuration = 0.5f;  // ✅ 공격 애니메이션 시간
+    public float attackCooldown = 2f;
+    public float attackDuration = 0.5f;
     
-    private float attackCounter = 0f;
-    private float attackTimer = 0f;  // ✅ 공격 진행 시간
-    private Transform attackPoint;
+    private float lastAttackTime = -999f; // 마지막 공격 시간
+    public Transform attackPoint;
     private LayerMask playerLayer;
-    private bool isAttacking = false;  // ✅ 공격 중인지 확인
+    private bool isAttacking = false;
+    private float attackStartTime = 0f;
+    private bool canAttack;
 
     void Start()
     {
         attackPoint = transform.Find("AttackPoint");
         playerLayer = LayerMask.GetMask("Player");
+        
+        Debug.Log($"EnemyCombat initialized. Player layer mask: {playerLayer.value}");
     }
 
     void Update()
     {
-        if (attackCounter > 0)
-            attackCounter -= Time.deltaTime;
-        
-        if (attackTimer > 0)
-            attackTimer -= Time.deltaTime;
-        else if (isAttacking)
+        // 공격 진행 중인지 확인
+        if (isAttacking && Time.time >= attackStartTime + attackDuration)
+        {
             isAttacking = false;
+            Debug.Log("Attack animation finished");
+        }
     }
 
-    // ✅ 공격 가능 여부 확인
+    // 공격 가능 여부 확인
     public bool CanAttack()
     {
-        return attackCounter <= 0;
+        canAttack = Time.time >= lastAttackTime + attackCooldown;
+        if (!canAttack)
+        {
+            Debug.Log($"Attack on cooldown. Time left: {(lastAttackTime + attackCooldown) - Time.time:F2}s");
+        }
+        return canAttack;
     }
 
-    // ✅ 공격이 완료되었는지 확인
+    // 공격이 완료되었는지 확인
     public bool IsAttackFinished()
     {
         return !isAttacking;
@@ -46,65 +54,77 @@ public class EnemyCombat : MonoBehaviour
 
     public void Attack()
     {
-        if (attackCounter > 0)
+        // 쿨다운 체크
+        if (!CanAttack())
         {
-            Debug.Log("Attack on cooldown!");
             return;
         }
         
+        // 공격 시작
         isAttacking = true;
-        attackTimer = attackDuration;
-        attackCounter = attackCooldown;
+        attackStartTime = Time.time;
+        lastAttackTime = Time.time;
         
-        Debug.Log("Executing attack!");
+        Debug.Log("=== ATTACK STARTED ===");
+
+        // AttackPoint 위치 결정
+        Vector2 attackPos = attackPoint.position;
         
-        // ✅ AttackPoint가 없으면 Enemy 위치 사용
-        Vector2 attackPos = attackPoint != null ? attackPoint.position : transform.position;
+        Debug.Log($"Attack position: {attackPos}");
+        Debug.Log($"Attack range: {attackRange}");
         
-        RaycastHit2D[] hits = Physics2D.RaycastAll(
-            attackPos, 
-            Vector2.right * transform.localScale.x, 
-            attackRange, 
-            playerLayer
-        );
+        // OverlapCircle로 플레이어 감지 (훨씬 간단!)
+        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPos, attackRange, playerLayer);
         
-        Debug.Log($"Attack hits: {hits.Length}");
+        Debug.Log($"Circle hits: {hits.Length}");
         
-        if (hits.Length > 0)
+        // 히트된 모든 객체 처리
+        foreach (Collider2D hit in hits)
         {
-            foreach (RaycastHit2D hit in hits)
+            Debug.Log($"Hit object: {hit.name} (Layer: {LayerMask.LayerToName(hit.gameObject.layer)})");
+            
+            // 체력 감소
+            PlayerHealth playerHealth = hit.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
             {
-                Debug.Log($"Hit: {hit.collider.name}");
-                
-                PlayerHealth playerHealth = hit.collider.GetComponent<PlayerHealth>();
-                if (playerHealth != null)
-                {
-                    Debug.Log($"Dealing {damageAmount} damage!");
-                    playerHealth.ChangeHealth(-damageAmount);
-                }
-                
-                Player playerMovement = hit.collider.GetComponent<Player>();
-                if (playerMovement != null)
-                {
-                    Debug.Log($"Applying knockback! Force: {knockbackForce}");
-                    playerMovement.KnockBack(transform, knockbackForce, stunTime);
-                }
+                Debug.Log($"Dealing {damageAmount} damage to {hit.name}!");
+                playerHealth.ChangeHealth(-damageAmount);
+            }
+            else
+            {
+                Debug.LogWarning($"PlayerHealth component not found on {hit.name}");
+            }
+            
+            // 넉백 적용
+            Player playerMovement = hit.GetComponent<Player>();
+            if (playerMovement != null)
+            {
+                Debug.Log($"Applying knockback! Force: {knockbackForce}");
+                playerMovement.KnockBack(transform, knockbackForce, stunTime);
+            }
+            else
+            {
+                Debug.LogWarning($"Player component not found on {hit.name}");
             }
         }
-        else
+        
+        if (hits.Length == 0)
         {
-            Debug.LogWarning("No hits detected!");
+            Debug.LogWarning("No hits detected! Check layer settings and attack range.");
         }
     }
     
-    // ✅ 디버그용 Gizmo
+    // 디버그용 Gizmo
     private void OnDrawGizmos()
     {
-        if (attackPoint != null)
-        {
-            Gizmos.color = Color.red;
-            Vector3 direction = Vector3.right * transform.localScale.x;
-            Gizmos.DrawRay(attackPoint.position, direction * attackRange);
-        }
+        Vector2 attackPos = attackPoint.position;
+        
+        // 공격 범위를 빨간 원으로 표시
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(attackPos, attackRange);
+        
+        // 중심점 표시
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(attackPos, 0.1f);
     }
 }

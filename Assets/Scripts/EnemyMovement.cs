@@ -22,39 +22,47 @@ public class EnemyMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         enemyCombat = GetComponent<EnemyCombat>();
-        detectionPoint = transform.Find("DetectionPoint");
+        
+        if (detectionPoint == null)
+        {
+            detectionPoint = transform.Find("DetectionPoint");
+        }
+        
         ChangeState(EnemyState.Idle);
+        
+        Debug.Log($"EnemyMovement initialized. Player layer mask: {playerLayer.value}");
     }
 
     void Update()
     {
-        CheckForPlayer();
+        // 공격 중이 아니거나 공격이 끝났으면 플레이어 체크
+        if (enemyState != EnemyState.Attacking || 
+            (enemyCombat != null && enemyCombat.IsAttackFinished()))
+        {
+            CheckForPlayer();
+        }
 
         switch (enemyState)
         {
+            case EnemyState.Idle:
+                Stop();
+                break;
+
             case EnemyState.Chasing:
                 Chase();
                 break;
 
             case EnemyState.Attacking:
-                rb.linearVelocity = Vector2.zero;
-                Attack();
-                if (enemyCombat != null && enemyCombat.IsAttackFinished())
-                {
-                    // ✅ CheckForPlayer()가 상태를 다시 결정하도록 함
-                    // 여기서는 아무것도 하지 않음
-                }
-                break;
-
-            default:
                 Stop();
                 break;
         }
     }
+
     private void Stop()
     {
         rb.linearVelocity = Vector2.zero;
     }
+
     private void CheckForPlayer()
     {
         if (detectionPoint == null) return;
@@ -65,36 +73,30 @@ public class EnemyMovement : MonoBehaviour
         {
             player = hits[0].transform;
             float distance = Vector2.Distance(detectionPoint.position, player.position);
+            float combatDistance = Vector2.Distance(enemyCombat.attackPoint.position, player.position);
 
-            if (distance <= attackRange && enemyCombat != null && enemyCombat.CanAttack())
+            // 공격 범위 내
+            if (combatDistance <= attackRange)
             {
-                if (enemyState != EnemyState.Attacking || enemyCombat.IsAttackFinished())
+                if (enemyCombat != null && enemyCombat.CanAttack())
                 {
-                    ChangeState(EnemyState.Attacking);
+                    ChangeState(EnemyState.Attacking);                    ;
                 }
+                // 공격 쿨다운 중에는 그냥 대기
             }
-            else if (distance <= detectRange && distance > attackRange)
+            // 추격 범위 내
+            else if (distance <= detectRange)
             {
-                if (enemyState == EnemyState.Attacking && !enemyCombat.IsAttackFinished())
-                {
-                    //??
-                }
-                else
-                {
-                    ChangeState(EnemyState.Chasing);
-                }
+                ChangeState(EnemyState.Chasing);
             }
         }
         else
         {
-            // ✅ 감지 범위 밖
-            if (enemyState == EnemyState.Attacking && !enemyCombat.IsAttackFinished())
-            {
-                // 공격 중이면 완료까지 기다림
-            }
-            else if (enemyState != EnemyState.Idle)
+            // 플레이어를 찾지 못함
+            if (enemyState != EnemyState.Idle)
             {
                 ChangeState(EnemyState.Idle);
+                player = null;
             }
         }
     }
@@ -103,12 +105,14 @@ public class EnemyMovement : MonoBehaviour
     {
         if (player == null)
         {
-            rb.linearVelocity = Vector2.zero;
+            Stop();
+            ChangeState(EnemyState.Idle);
             return;
         }
         
         float distance = Vector2.Distance(transform.position, player.position);
 
+        // 감지 범위를 벗어남
         if (distance > detectRange)
         {
             ChangeState(EnemyState.Idle);
@@ -116,9 +120,12 @@ public class EnemyMovement : MonoBehaviour
             return;
         }
         
+        // 플레이어 방향으로 이동
         Vector2 direction = (player.position - transform.position).normalized;
 
-        if ((direction.x < 0 && facingDirection == 1) || (direction.x > 0 && facingDirection == -1))
+        // 방향에 따라 스프라이트 뒤집기
+        if ((direction.x < 0 && facingDirection == 1) || 
+            (direction.x > 0 && facingDirection == -1))
         {
             FlipX();
         }
@@ -136,22 +143,27 @@ public class EnemyMovement : MonoBehaviour
     {
         if (enemyState != newState)
         {
-            Debug.Log($"State: {enemyState} → {newState}");
+            Debug.Log($"State changed: {enemyState} → {newState}");
             enemyState = newState;
-            
+
             if (anim != null)
             {
                 anim.SetBool("IsMoving", newState == EnemyState.Chasing);
             }
+            if (enemyState == EnemyState.Attacking) Attack();
         }
     }
 
     private void Attack()
     {
-        Debug.Log("Enemy attacking!");
+        Debug.Log("=== Enemy Attack Triggered ===");
         if (enemyCombat != null)
         {
             enemyCombat.Attack();
+        }
+        else
+        {
+            Debug.LogError("EnemyCombat component is missing!");
         }
     }
 
@@ -159,11 +171,9 @@ public class EnemyMovement : MonoBehaviour
     {
         if (detectionPoint != null)
         {
+            // 감지 범위 (노란색)
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(detectionPoint.position, detectRange);
-            
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(detectionPoint.position, attackRange);
         }
     }
 }
