@@ -16,6 +16,8 @@ public class EnemyMovement : MonoBehaviour
     public float attackRange = 1f;
     public float detectRange = 5f;
     public LayerMask playerLayer;
+    public float attackCooldown = 2f;
+    public float attackCooldownTimer;
 
     void Start()
     {
@@ -35,9 +37,11 @@ public class EnemyMovement : MonoBehaviour
 
     void Update()
     {
-        // 공격 중이 아니거나 공격이 끝났으면 플레이어 체크
-        if (enemyState != EnemyState.Attacking || 
-            (enemyCombat != null && enemyCombat.IsAttackFinished()))
+        if (attackCooldownTimer > 0)
+        {
+            attackCooldownTimer -= Time.deltaTime;
+        }
+        if (enemyState != EnemyState.Attacking)
         {
             CheckForPlayer();
         }
@@ -72,44 +76,27 @@ public class EnemyMovement : MonoBehaviour
         if (hits.Length > 0)
         {
             player = hits[0].transform;
-            float distance = Vector2.Distance(detectionPoint.position, player.position);
-            float combatDistance = Vector2.Distance(enemyCombat.attackPoint.position, player.position);
 
-            // 공격 범위 내
-            if (combatDistance <= attackRange)
+            float distance = Vector2.Distance(detectionPoint.position, player.position);
+
+            if (distance <= attackRange && attackCooldownTimer <= 0)
             {
-                if (enemyCombat != null && enemyCombat.CanAttack())
-                {
-                    ChangeState(EnemyState.Attacking);                    ;
-                }
-                // 공격 쿨다운 중에는 그냥 대기
+                attackCooldownTimer = attackCooldown;
+                ChangeState(EnemyState.Attacking);
             }
-            // 추격 범위 내
-            else if (distance <= detectRange)
+            else if (distance <= detectRange && distance > attackRange)
             {
                 ChangeState(EnemyState.Chasing);
             }
-        }
-        else
-        {
-            // 플레이어를 찾지 못함
-            if (enemyState != EnemyState.Idle)
+            else
             {
                 ChangeState(EnemyState.Idle);
-                player = null;
             }
         }
     }
 
     private void Chase()
     {
-        if (player == null)
-        {
-            Stop();
-            ChangeState(EnemyState.Idle);
-            return;
-        }
-        
         float distance = Vector2.Distance(transform.position, player.position);
 
         // 감지 범위를 벗어남
@@ -120,10 +107,8 @@ public class EnemyMovement : MonoBehaviour
             return;
         }
         
-        // 플레이어 방향으로 이동
         Vector2 direction = (player.position - transform.position).normalized;
 
-        // 방향에 따라 스프라이트 뒤집기
         if ((direction.x < 0 && facingDirection == 1) || 
             (direction.x > 0 && facingDirection == -1))
         {
@@ -141,32 +126,22 @@ public class EnemyMovement : MonoBehaviour
 
     private void ChangeState(EnemyState newState)
     {
-        if (enemyState != newState)
-        {
-            Debug.Log($"State changed: {enemyState} → {newState}");
-            enemyState = newState;
+        if (enemyState == EnemyState.Idle)
+            anim.SetBool("IsIdle", false);
+        else if (enemyState == EnemyState.Chasing)
+            anim.SetBool("IsChasing", false);
+        else if (enemyState == EnemyState.Attacking)
+            anim.SetBool("IsAttacking", false);
 
-            if (anim != null)
-            {
-                anim.SetBool("IsMoving", newState == EnemyState.Chasing);
-            }
-            if (enemyState == EnemyState.Attacking) Attack();
-        }
+        enemyState = newState;
+
+        if (enemyState == EnemyState.Idle)
+            anim.SetBool("IsIdle", true);
+        else if (enemyState == EnemyState.Chasing)
+            anim.SetBool("IsChasing", true);
+        else if (enemyState == EnemyState.Attacking)
+            anim.SetBool("IsAttacking", true);
     }
-
-    private void Attack()
-    {
-        Debug.Log("=== Enemy Attack Triggered ===");
-        if (enemyCombat != null)
-        {
-            enemyCombat.Attack();
-        }
-        else
-        {
-            Debug.LogError("EnemyCombat component is missing!");
-        }
-    }
-
     private void OnDrawGizmos()
     {
         if (detectionPoint != null)

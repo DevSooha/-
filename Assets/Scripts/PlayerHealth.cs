@@ -14,9 +14,9 @@ public class PlayerHealth : MonoBehaviour
     }
 
     // 필요할 때만 호출
-    public void ChangeHealth(int amount)
+    public void TakeDamage(int amount)
     {
-        HP += amount;
+        HP -= amount;
         if (HP > maxHP)
             HP = maxHP;
 
