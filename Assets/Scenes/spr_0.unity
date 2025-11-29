@@ -120,7 +120,10 @@ NavMeshSettings:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 --- !u!1001 &53217987
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -223,6 +226,9 @@ MonoBehaviour:
   blockMessage: 
   messageUI: {fileID: 0}
   messagePanel: {fileID: 0}
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 --- !u!1 &75375522
 GameObject:
@@ -362,7 +368,10 @@ Transform:
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 --- !u!1 &353744492
 GameObject:
   m_ObjectHideFlags: 0
@@ -680,6 +689,9 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 --- !u!1 &677359858
 GameObject:
@@ -3811,7 +3823,10 @@ Transform:
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 --- !u!1001 &1061601551
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3990,6 +4005,9 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2135631907}
   m_CullTransparentMesh: 1
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
@@ -3998,9 +4016,15 @@ SceneRoots:
   - {fileID: 75375526}
   - {fileID: 846552793}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
   - {fileID: 53217987}
   - {fileID: 1061601551}
   - {fileID: 353744496}
   - {fileID: 516719910}
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
