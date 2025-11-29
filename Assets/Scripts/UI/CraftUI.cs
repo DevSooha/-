@@ -9,8 +9,6 @@ public class CraftUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     [SerializeField] private Image potSlot2Image;
     [SerializeField] private ItemData itemData;
     [SerializeField] private Inventory inventory;
-
-    [SerializeField] private Image gaugeBar;          
     [SerializeField] private Image needleMarker;      
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private TextMeshProUGUI resultText;
@@ -23,7 +21,6 @@ public class CraftUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private float gameTimer = 6f;       
     private bool isGameActive = false;
     private bool isDragging = false;
-    private bool gameStarted = false;
 
     private const float GAUGE_HEIGHT = 128f;
     private const float GAUGE_UP_SPEED = 28f;   
@@ -36,13 +33,6 @@ public class CraftUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         oxygenGauge.gameObject.SetActive(false);
         if (resultText != null)
             resultText.gameObject.SetActive(false);
-    }
-    private void FixedUpdate()
-    {
-        if (isGameActive && Input.GetMouseButton(0) && isDragging == true)
-    {
-        gaugeValue += GAUGE_UP_SPEED * Time.deltaTime;
-    }
     }
 
     public void OnMaterialSelected(Item item)
@@ -67,7 +57,7 @@ public class CraftUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (!gameStarted)
+        if (!isGameActive)
         {
             if (slot1Item == null || slot2Item == null)
             {
@@ -77,19 +67,18 @@ public class CraftUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
             oxygenGauge.gameObject.SetActive(true);
             isGameActive = true;
-            gameStarted = true;
             gaugeValue = 0f;
             gameTimer = 6f;
             Debug.Log("풀무 게임 시작!");
         }
-
-        if (isGameActive)
-        {
-            isDragging = true;
-        }
+        if (isGameActive) isDragging = true;
     }
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (!isGameActive || !isDragging) return;
 
-
+        gaugeValue += GAUGE_UP_SPEED * Time.deltaTime;
+    }
     public void OnPointerUp(PointerEventData eventData)
     {
         isDragging = false;
@@ -97,11 +86,23 @@ public class CraftUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            isGameActive = false;
+            isDragging = false;
+            gameObject.SetActive(false);
+            Debug.Log("크래프팅 종료");
+            return;
+        }
         if (!isGameActive) return;
 
         gameTimer -= Time.deltaTime;
         timerText.text = Mathf.Max(0, gameTimer).ToString("F1");
 
+        if (isGameActive && Input.GetMouseButton(0) && isDragging)
+    {
+        gaugeValue += GAUGE_UP_SPEED * Time.deltaTime;
+    }
         if (!isDragging)
         {
             gaugeValue -= GAUGE_DOWN_SPEED * Time.deltaTime;
@@ -119,9 +120,6 @@ public class CraftUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     private void UpdateGaugeUI()
     {
-        float barHeight = (gaugeValue / 100f) * GAUGE_HEIGHT;
-        gaugeBar.rectTransform.sizeDelta = new Vector2(gaugeBar.rectTransform.sizeDelta.x, barHeight);
-
         float needleY = (gaugeValue / 100f) * GAUGE_HEIGHT - GAUGE_HEIGHT / 2f;
         needleMarker.rectTransform.localPosition = new Vector3(0, needleY, 0);
     }
@@ -140,7 +138,6 @@ public class CraftUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             resultText.gameObject.SetActive(true);
         }
 
-        // PotionCraft에 포션 생성 위임
         PotionCraft.CreatePotion(potionType);
 
         Debug.Log($"게임 종료! 게이지: {gaugeValue:F1}");
@@ -153,7 +150,7 @@ public class CraftUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         oxygenGauge.gameObject.SetActive(false);
         if (resultText != null)
             resultText.gameObject.SetActive(false);
-        gameStarted = false;
+        isGameActive = false;
     }
 
     public void ClearSlots()
@@ -163,7 +160,7 @@ public class CraftUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         potSlot1Image.enabled = false;
         potSlot2Image.enabled = false;
         nextReplaceIndex = 0;
-        gameStarted = false;
+        isGameActive = false;
     }
 
     public int GetMaterialCount()

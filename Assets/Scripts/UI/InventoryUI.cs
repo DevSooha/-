@@ -8,6 +8,7 @@ public class InventoryUI : MonoBehaviour
 {
     [SerializeField] private Inventory inventory;
     [SerializeField] private CraftUI craftUI;
+    [SerializeField] private PotionManager potionManager;
     
     [SerializeField] private Transform materialContainer;
     [SerializeField] private Button materialPageButton;
@@ -105,6 +106,10 @@ public class InventoryUI : MonoBehaviour
         if (category == ItemCategory.Material && craftUI != null)
         {
             craftUI.OnMaterialSelected(selectedItem);
+        }
+        if (category == ItemCategory.Potion)
+        {
+            //포션 사용 스크립트
         }
     }
 

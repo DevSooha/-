@@ -6,6 +6,8 @@ public class Player : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5f;
+    public float baseSpeed = 5f;    
+    float buffTimeLeft = 0f;
     public float facingDirection = -1;
     private bool knockedBack = false;
     private bool canMove = true;
@@ -14,12 +16,10 @@ public class Player : MonoBehaviour
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private Vector2 moveInput;
-    public Animator animator;
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        animator = GetComponent<Animator>();
         
         if (rb == null)
         {
@@ -36,7 +36,6 @@ public class Player : MonoBehaviour
             if (!canMove)
             {
                 moveInput = Vector2.zero;
-                animator.SetBool("isRunning", false);
                 return;
             }
             float horizontal = Input.GetAxisRaw("Horizontal");
@@ -44,12 +43,20 @@ public class Player : MonoBehaviour
 
             moveInput = new Vector2(horizontal, vertical).normalized;
             bool isMoving = moveInput.magnitude > 0;
-            animator.SetBool("isRunning", isMoving);
             if ((horizontal < 0 && transform.localScale.x < 0) || (horizontal>0 && transform.localScale.x>0))
             {
                 FlipX();
             }
         }
+         if (buffTimeLeft > 0f)
+    {
+        buffTimeLeft -= Time.deltaTime;
+        if (buffTimeLeft <= 0f)
+        {
+            buffTimeLeft = 0f;
+            moveSpeed = baseSpeed;   
+        }
+    }
     }
 
     void FixedUpdate()
@@ -66,7 +73,6 @@ public class Player : MonoBehaviour
         if (!canMove)
         {
             rb.linearVelocity = Vector2.zero;
-            animator.SetBool("isRunning", false);
         }
     }
     void FlipX()
@@ -83,7 +89,6 @@ public class Player : MonoBehaviour
         knockedBack = true;
         Vector2 direction = (transform.position - enemy.position).normalized;
         rb.linearVelocity = direction * force;
-        animator.SetBool("knockedBack", true);
         StartCoroutine(KnockBackCouter(stunTime));     
     }
     IEnumerator KnockBackCouter(float stunTime)
@@ -91,6 +96,10 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(stunTime);
         rb.linearVelocity = Vector2.zero;
         knockedBack = false;
-        animator.SetBool("knockedBack", false);
     }
+    public void ApplySpeedBuff(float duration)
+{
+    buffTimeLeft = duration;
+    moveSpeed = baseSpeed * 2;
+}
 }

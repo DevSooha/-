@@ -1,5 +1,7 @@
 using UnityEditor;
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
 
 public class EnemyCombat : MonoBehaviour
 {
@@ -8,6 +10,8 @@ public class EnemyCombat : MonoBehaviour
     public float stunTime = 0.2f;
     public int damageAmount = 1;
     private LayerMask playerLayer;
+    public int enemyHP;
+    public int enemyMaxHP;
     void Start()
     {
         playerLayer = LayerMask.GetMask("Player");
@@ -15,9 +19,19 @@ public class EnemyCombat : MonoBehaviour
         Debug.Log($"EnemyCombat initialized. Player layer mask: {playerLayer.value}");
     }
 
-    void Update()
+    public void EnemyTakeDamage(int amount)
     {
+        enemyHP -= amount;
+        if (enemyHP > enemyMaxHP)
+            enemyHP = enemyMaxHP;
 
+        if (enemyHP < 0)
+            enemyHP = 0;
+        Debug.Log("적의 체력 : " + enemyHP);
+        if (enemyHP == 0)
+        {
+            Destroy(gameObject);
+        }
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
