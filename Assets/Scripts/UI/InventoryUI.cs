@@ -1,76 +1,144 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
+
 
 public class InventoryUI : MonoBehaviour
 {
     [SerializeField] private Inventory inventory;
-    [SerializeField] private Transform slotContainer;
+    [SerializeField] private CraftUI craftUI;
+    
+    [SerializeField] private Transform materialContainer;
+    [SerializeField] private Button materialPageButton;
+ 
+    [SerializeField] private Transform potionContainer;
+    [SerializeField] private Button potionPageButton;
+    
     [SerializeField] private GameObject slotPrefab;
-    [SerializeField] private Button nextButton;
-    [SerializeField] private TextMeshProUGUI pageText;
-    [SerializeField] private int slotsPerPage = 6;
+    [SerializeField] private TextMeshProUGUI materialPageText;
+    [SerializeField] private TextMeshProUGUI potionPageText;
     
-    private InventorySlot[] slots;
+    [SerializeField] private int slotsPerMaterialPage = 6;
+    [SerializeField] private int slotsPerPotionPage = 5;
     
+    private InventorySlot[] materialSlots;
+    private InventorySlot[] potionSlots;
+
+    private int materialCurrentPage = 0;
+    private int potionCurrentPage = 0;
+
+
     private void Start()
     {
-        InitializeSlots();
+        InitializeSlots(ItemCategory.Material);
+        InitializeSlots(ItemCategory.Potion);
+        
+        materialPageButton.onClick.AddListener(() => NextMaterialPage());
+        potionPageButton.onClick.AddListener(() => NextPotionPage());
         
         RefreshUI();
     }
-    private void Update()
+    private void FixedUpdate()
     {
-        if (Input.GetKeyDown(KeyCode.Tab))
-    {
-        inventory.NextPage();
         RefreshUI();
     }
-        nextButton.onClick.AddListener(() => 
-        {
-            inventory.NextPage();
-            RefreshUI();
-        });
-    }
-    
-    // ============ 슬롯 초기화 (6개 생성) ============
-    private void InitializeSlots()
+
+
+    private void InitializeSlots(ItemCategory category)
     {
-        slots = new InventorySlot[slotsPerPage];
+        int slotCount = (category == ItemCategory.Material) ? slotsPerMaterialPage : slotsPerPotionPage;
+        Transform container = (category == ItemCategory.Material) ? materialContainer : potionContainer;
         
-        for (int i = 0; i < slotsPerPage; i++)
+        InventorySlot[] slots = new InventorySlot[slotCount];
+        
+        for (int i = 0; i < slotCount; i++)
         {
-            GameObject slotObj = Instantiate(slotPrefab, slotContainer);
+            GameObject slotObj = Instantiate(slotPrefab, container);
             InventorySlot slot = slotObj.GetComponent<InventorySlot>();
+            slot.Init(this, i, category);
             slots[i] = slot;
         }
+        
+        if (category == ItemCategory.Material)
+            materialSlots = slots;
+        else if (category == ItemCategory.Potion)
+            potionSlots = slots;
     }
-    
-    // ============ UI 갱신 ============
+
+
+     private void NextMaterialPage()
+    {
+        int maxPage = GetMaxPage(ItemCategory.Material, slotsPerMaterialPage);
+        materialCurrentPage++;
+        if (materialCurrentPage >= maxPage)
+            materialCurrentPage = 0;
+        RefreshUI();
+    }
+
+    private void NextPotionPage()
+    {
+        int maxPage = GetMaxPage(ItemCategory.Potion, slotsPerPotionPage);
+        potionCurrentPage++;
+        if (potionCurrentPage >= maxPage)
+            potionCurrentPage = 0;
+        RefreshUI();
+    }
+
+    public void OnSlotClicked(ItemCategory category, int localIndex)
+    {
+        List<Item> allItems = (category == ItemCategory.Material) ? 
+            inventory.MaterialItems : inventory.PotionItems;
+        
+        int currentPage = (category == ItemCategory.Material) ? materialCurrentPage : potionCurrentPage;
+        int slotPerPage = (category == ItemCategory.Material) ? slotsPerMaterialPage : slotsPerPotionPage;
+        
+        int globalIndex = currentPage * slotPerPage + localIndex;
+        
+        if (globalIndex < 0 || globalIndex >= allItems.Count)
+            return;
+        
+        Item selectedItem = allItems[globalIndex];
+        if (selectedItem == null || selectedItem.data == null)
+            return;
+        
+        if (category == ItemCategory.Material && craftUI != null)
+        {
+            craftUI.OnMaterialSelected(selectedItem);
+        }
+    }
+
+
     public void RefreshUI()
     {
-        var pageItems = inventory.GetCurrentPageItems();
+        RefreshCategoryUI(ItemCategory.Material, materialSlots, materialCurrentPage, slotsPerMaterialPage, materialPageText);
+        RefreshCategoryUI(ItemCategory.Potion, potionSlots, potionCurrentPage, slotsPerPotionPage, potionPageText);
+
+    }
+    public void RefreshCategoryUI(ItemCategory category, InventorySlot[] slots, int currentPage, int slotPerPage, TextMeshProUGUI pageTextUI)
+    {
+        List<Item> allItems = (category == ItemCategory.Material) ? 
+            inventory.MaterialItems : inventory.PotionItems;
         
-        // 슬롯 업데이트
+        int startIndex = currentPage * slotPerPage;
+        int endIndex = Mathf.Min(startIndex + slotPerPage, allItems.Count);
+        
         for (int i = 0; i < slots.Length; i++)
         {
-            if (i < pageItems.Count)
-            {
-                slots[i].SetItem(pageItems[i]);
-            }
+            if (startIndex + i < endIndex)
+                slots[i].SetItem(allItems[startIndex + i]);
             else
-            {
                 slots[i].Clear();
-            }
         }
         
-        // 페이지 텍스트 (1/2, 2/2 식)
-        int maxPage = Mathf.CeilToInt((float)inventory.Items.Count / slotsPerPage);
-        if (maxPage == 0) maxPage = 1;
+        int maxPage = GetMaxPage(category, slotPerPage);
+        pageTextUI.text = $"{currentPage + 1} / {maxPage}";
+    }
+    private int GetMaxPage(ItemCategory category, int slotPerPage)
+    {
+        List<Item> allItems = category == ItemCategory.Material ? 
+            inventory.MaterialItems : inventory.PotionItems;
         
-        pageText.text = $"{inventory.CurrentPage + 1}/{maxPage}";
-        
-        // 버튼 활성화 (1페이지만 있으면 비활성)
-        nextButton.interactable = maxPage > 1;
+        return Mathf.Max(1, Mathf.CeilToInt((float)allItems.Count / slotPerPage));
     }
 }

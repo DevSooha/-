@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 254b5387ea8dd184bb6e0f8514b28163, type: 3}
-  m_Name: BluePotion
+  m_Name: Pastelbloom
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: BluePotion
-  description: DRINK ME !
-  icon: {fileID: 21300000, guid: 2d7d9ae02b7159843ac7d5ead0f8b89a, type: 3}
-  maxStack: 20
+  itemName: Pastelbloom
+  description: "\uBD04/\uBB3C"
+  icon: {fileID: 0}
+  maxStack: 99
   isStackable: 1
-  category: 1
+  category: 0

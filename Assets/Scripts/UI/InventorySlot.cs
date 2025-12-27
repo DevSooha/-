@@ -2,21 +2,34 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 public class InventorySlot : MonoBehaviour
 {
     [SerializeField] private Image itemIcon;
     [SerializeField] private TextMeshProUGUI quantityText;
     [SerializeField] private Image slotBackground;
     
+    private InventoryUI inventoryUI;  
+    private ItemCategory category;     
     private Item currentItem;
-    private Color originalColor;
     
-    private void Awake()
+    public int SlotIndex { get; set; }
+
+
+    public void Init(InventoryUI ui, int index, ItemCategory cat)
     {
-        originalColor = slotBackground.color;
+        inventoryUI = ui;
+        SlotIndex = index;
+        category = cat; 
     }
-    
-    // ============ 슬롯에 아이템 설정 ============
+
+    public void OnClick()
+    {
+        // category와 함께 전달
+        inventoryUI.OnSlotClicked(category, SlotIndex);
+    }
+
+
     public void SetItem(Item item)
     {
         currentItem = item;
@@ -26,7 +39,6 @@ public class InventorySlot : MonoBehaviour
             itemIcon.sprite = item.data.icon;
             itemIcon.enabled = true;
             
-            // 중첩 가능 + 개수 > 1 일때만 표시
             if (item.data.isStackable && item.quantity > 1)
             {
                 quantityText.text = item.quantity.ToString();
@@ -38,27 +50,12 @@ public class InventorySlot : MonoBehaviour
             }
         }
     }
-    
-    // ============ 슬롯 비우기 ============
+
     public void Clear()
     {
         currentItem = null;
         itemIcon.enabled = false;
         quantityText.enabled = false;
-        slotBackground.color = originalColor;
     }
     
-    // ============ 마우스 호버 효과 ============
-    public void OnHover()
-    {
-        if (currentItem != null)
-        {
-            slotBackground.color = new Color(1, 1, 1, 0.5f);
-        }
-    }
-    
-    public void OnHoverExit()
-    {
-        slotBackground.color = originalColor;
-    }
 }
