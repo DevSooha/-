@@ -1,70 +1,48 @@
-using UnityEditor;
 using UnityEngine;
-using TMPro;
-using UnityEngine.UI;
 
 public class EnemyCombat : MonoBehaviour
 {
-    public float attackRange = 0.8f;
-    public float knockbackForce = 20f;
-    public float stunTime = 0.2f;
+    [Header("Combat")]
+    public int enemyHP = 3;
     public int damageAmount = 1;
-    private LayerMask playerLayer;
-    public int enemyHP;
-    public int enemyMaxHP;
-    void Start()
-    {
-        playerLayer = LayerMask.GetMask("Player");
-        
-        Debug.Log($"EnemyCombat initialized. Player layer mask: {playerLayer.value}");
-    }
+
+    [Header("Drop")]
+    public GameObject worldItemPrefab;
+    public ItemData pastelbloomItemData;   // ⭐ 기존 ItemData 사용
+    public int dropAmount = 1;
+    public float dropChance = 1f;
 
     public void EnemyTakeDamage(int amount)
     {
         enemyHP -= amount;
-        if (enemyHP > enemyMaxHP)
-            enemyHP = enemyMaxHP;
 
-        if (enemyHP < 0)
-            enemyHP = 0;
-        Debug.Log("적의 체력 : " + enemyHP);
-        if (enemyHP == 0)
+        if (enemyHP <= 0)
         {
+            DropItem();
             Destroy(gameObject);
         }
     }
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.tag == "Player")
-        {
-            Attack();
-            collision.gameObject.GetComponent<PlayerHealth>().TakeDamage(damageAmount);
-        }
-    }
-    public void Attack()
-    {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, attackRange, playerLayer);
 
-        if (hits.Length > 0)
-        {
-            hits[0].GetComponent<PlayerHealth>().TakeDamage(damageAmount);
-            hits[0].GetComponent<Player>().KnockBack(transform, knockbackForce, stunTime);
-        }
-        if (hits.Length == 0)
-        {
-            Debug.LogWarning("No hits detected! Check layer settings and attack range.");
-        }
-    }
-    private void OnDrawGizmos()
+    void DropItem()
     {
-        Vector2 attackPos = transform.position;
-        
-        // 공격 범위를 빨간 원으로 표시
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackPos, attackRange);
-        
-        // 중심점 표시
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(attackPos, 0.1f);
+        if (Random.value > dropChance) return;
+
+        Vector3 dropPos =
+            transform.position + (Vector3)Random.insideUnitCircle.normalized * 0.5f;
+
+        GameObject item = Instantiate(
+            worldItemPrefab,
+            dropPos,
+            Quaternion.identity
+        );
+
+        WorldItem wi = item.GetComponent<WorldItem>();
+
+        wi.Init(pastelbloomItemData, dropAmount);
+
+        SpriteRenderer sr = item.GetComponent<SpriteRenderer>();
+        sr.sprite = pastelbloomItemData.icon;
+        sr.sortingLayerName = "Item";
     }
+
 }

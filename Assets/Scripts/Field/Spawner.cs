@@ -7,24 +7,18 @@ public class Spawner : MonoBehaviour
     public TextAsset csvFile;
     public Tilemap floorTilemap;
 
+    [Header("공용 아이템 프리팹")]
+    public GameObject worldItemPrefab;
+
     [System.Serializable]
     public struct SpawnMapping
     {
         public string itemID;
-        public GameObject originalTemplate;
+        public string spritePath;
+        public ItemData itemData; // ★ [추가됨] 여기에 아이템 데이터를 직접 연결하세요!
     }
 
     public List<SpawnMapping> spawnList;
-
-    void Awake()
-    {
-        // 복제해야하는 아이템의 원본은 숨긴다. 
-        foreach (var mapping in spawnList)
-        {
-            if (mapping.originalTemplate != null)
-                mapping.originalTemplate.SetActive(false);
-        }
-    }
 
     void Start()
     {
@@ -33,13 +27,14 @@ public class Spawner : MonoBehaviour
 
     public void SpawnFromCSV()
     {
-        if (csvFile == null) { Debug.LogError("CSV 파일이 연결되지 않았습니다!"); return; }
+        if (csvFile == null) return;
 
         ClearPreviousSpawns();
 
-        // 유니티 텍스트 에셋 읽기 시 줄바꿈 처리
-        string[] lines = csvFile.text.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
-        Debug.Log("CSV 줄 수: " + lines.Length);
+        string[] lines = csvFile.text.Split(
+            new[] { '\n', '\r' },
+            System.StringSplitOptions.RemoveEmptyEntries
+        );
 
         for (int i = 1; i < lines.Length; i++)
         {
@@ -50,25 +45,27 @@ public class Spawner : MonoBehaviour
             string mapID = data[4].Trim();
             string rateStr = data[5].Trim().Replace("%", "");
 
-            if (mapID == "spr_3")
-            {
-                float spawnRate = float.Parse(rateStr) / 100f;
-                GameObject template = spawnList.Find(x => x.itemID == itemID).originalTemplate;
+            if (mapID != "spr_3") continue;
 
-                if (template != null)
-                {
-                    TrySpawnClone(template, spawnRate, itemID);
-                }
+            float spawnRate = float.Parse(rateStr) / 100f;
+
+            // 리스트에서 ID에 맞는 맵핑 데이터 찾기
+            SpawnMapping mapping = spawnList.Find(x => x.itemID == itemID);
+
+            // ★ [수정됨] spritePath 체크 대신 itemID가 맞는게 있는지 체크
+            if (!string.IsNullOrEmpty(mapping.itemID))
+            {
+                TrySpawn(mapping, spawnRate, itemID);
             }
         }
     }
 
-    void TrySpawnClone(GameObject original, float rate, string id)
+    void TrySpawn(SpawnMapping mapping, float rate, string id)
     {
-        float dice = Random.value;
-        if (dice > rate) return;
+        if (Random.value > rate) return;
 
         BoundsInt bounds = floorTilemap.cellBounds;
+
         for (int attempts = 0; attempts < 100; attempts++)
         {
             Vector3Int randomCell = new Vector3Int(
@@ -77,37 +74,54 @@ public class Spawner : MonoBehaviour
                 0
             );
 
-            if (floorTilemap.HasTile(randomCell))
+            if (!floorTilemap.HasTile(randomCell)) continue;
+
+            Vector3 spawnPos = floorTilemap.GetCellCenterWorld(randomCell);
+            spawnPos.z = 0;
+
+            Collider2D hit = Physics2D.OverlapCircle(spawnPos, 0.3f);
+            if (hit != null && hit.CompareTag("Obstacle")) continue;
+
+            // 1. 아이템 생성
+            GameObject item = Instantiate(worldItemPrefab, spawnPos, Quaternion.identity, transform);
+
+            // ★★★ [핵심 수정] WorldItem 컴포넌트 초기화 (Init 호출) ★★★
+            WorldItem worldItemScript = item.GetComponent<WorldItem>();
+
+            if (mapping.itemData != null)
             {
-                Vector3 spawnPos = floorTilemap.GetCellCenterWorld(randomCell);
-                spawnPos.z = 0;
-
-                Collider2D hit = Physics2D.OverlapCircle(spawnPos, 0.3f);
-
-                if (hit == null || !hit.CompareTag("Obstacle"))
-                {
-                    GameObject clone = Instantiate(original, spawnPos, Quaternion.identity, transform);
-                    
-                    clone.SetActive(true);
-                    clone.tag = "Respawn";
-                    return;
-                }
+                // 여기서 Init을 해줘야 WorldItem의 initialized가 true가 되어 주워집니다.
+                worldItemScript.Init(mapping.itemData, 1);
             }
+            else
+            {
+                Debug.LogError($"Spawner: {id}에 해당하는 ItemData가 Inspector에 연결되지 않았습니다!");
+            }
+
+            // 2. 스프라이트 설정 (기존 로직 유지)
+            Sprite sprite = Resources.Load<Sprite>(mapping.spritePath);
+            if (sprite != null)
+            {
+                item.GetComponent<SpriteRenderer>().sprite = sprite;
+            }
+
+            // 3. 태그 설정 (Item 태그여야 PlayerInteraction이 인식함)
+            // PlayerInteraction에서 "Item" 태그를 줍게 되어 있다면 "Item"으로, 
+            // "Respawn"으로직을 따로 짰다면 "Respawn" 유지.
+            // 보통 줍기 로직은 "Item" 태그를 씁니다. 확인 필요!
+            item.tag = "Item";
+
+            item.SetActive(true);
+            return;
         }
-        Debug.LogWarning($"{id} 스폰 실패: 위치 못 찾음");
     }
 
     void ClearPreviousSpawns()
     {
-        // 내 하위(자식) 오브젝트들 중에서만 찾아서 파괴
-        // 리스트를 역순으로 도는 게 삭제할 때 안전함
         for (int i = transform.childCount - 1; i >= 0; i--)
         {
-            Transform child = transform.GetChild(i);
-            if (child.CompareTag("Respawn"))
-            {
-                Destroy(child.gameObject);
-            }
+            // 태그가 Item이든 Respawn이든 Spawner 자식이면 다 지움
+            Destroy(transform.GetChild(i).gameObject);
         }
     }
 }

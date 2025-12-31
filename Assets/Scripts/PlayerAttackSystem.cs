@@ -9,8 +9,10 @@ public enum WeaponType { None, Melee, PotionBomb }
 public class WeaponSlot
 {
     public WeaponType type;
-    public GameObject specificPrefab;
-    // ★ [추가됨] 무기 개수 (-1이면 무제한)
+    public ItemData itemData; // 연동을 위해 데이터 추가
+    public GameObject specificPrefab; // 던질 물체 프리팹
+
+    // -1이면 무제한 (근접무기), 양수면 소모품
     public int count = -1;
 }
 
@@ -24,20 +26,19 @@ public class PlayerAttackSystem : MonoBehaviour
     public Tilemap floorTilemap;
 
     [Header("Prefabs")]
-    public GameObject bombPrefab1;
-    public GameObject bombPrefab2;
+    public GameObject defaultBombPrefab; // 기본 폭탄 프리팹
     public GameObject stackMarkerPrefab;
 
     [Header("Weapon Slots")]
     public List<WeaponSlot> slots = new List<WeaponSlot>();
 
-    // 내부 변수
+    // 컴포넌트 캐싱
     private Player playerMovement;
     private Animator anim;
 
     private Vector2 aimDirection = Vector2.down;
 
-    // 공격 중복 방지용 변수
+    // 상태 변수
     private bool isAttacking = false;
     private bool isCharging = false;
 
@@ -45,44 +46,51 @@ public class PlayerAttackSystem : MonoBehaviour
     private int currentStack = 0;
     private List<GameObject> activeMarkers = new List<GameObject>();
 
+    private PlayerInteraction interactionSensor;
+
     void Start()
     {
         playerMovement = GetComponent<Player>();
         anim = GetComponent<Animator>();
 
-        // 타일맵 찾기 (기존 코드 유지)
+        // 타일맵 자동 찾기
         if (floorTilemap == null)
         {
             GameObject groundObj = GameObject.FindGameObjectWithTag("Ground");
             if (groundObj != null) floorTilemap = groundObj.GetComponent<Tilemap>();
             else
             {
-                GameObject floorObj = GameObject.Find("Floor");
+                GameObject floorObj = GameObject.Find("Floor"); // 이름으로 찾기 시도
                 if (floorObj != null) floorTilemap = floorObj.GetComponent<Tilemap>();
             }
         }
 
-        // 슬롯 초기화
+        // 초기 슬롯이 비어있으면 기본값 세팅 (테스트용)
         if (slots.Count == 0)
         {
-            // ★ [수정됨] 테스트용 초기 개수 설정 (근접은 -1, 폭탄은 5개씩)
             slots.Add(new WeaponSlot { type = WeaponType.Melee, count = -1 });
-            slots.Add(new WeaponSlot { type = WeaponType.PotionBomb, specificPrefab = bombPrefab1, count = 5 });
-            slots.Add(new WeaponSlot { type = WeaponType.PotionBomb, specificPrefab = bombPrefab2, count = 5 });
-            slots.Add(new WeaponSlot { type = WeaponType.None });
         }
+
+        interactionSensor = GetComponentInChildren<PlayerInteraction>();
     }
 
     void Update()
     {
         UpdateAimDirection();
 
+        // NPC 대화 중이면 공격 불가
+        if (interactionSensor != null && interactionSensor.IsInteractable)
+        {
+            return;
+        }
+
+        // 무기 교체 (C키)
         if (!isAttacking && !isCharging && Input.GetKeyDown(KeyCode.C))
         {
             RotateWeaponSlots();
         }
 
-        // 현재 슬롯(0번)이 비어있지 않은지 확인 (안전장치)
+        // 현재 슬롯의 무기 사용
         if (slots.Count > 0 && slots[0].type != WeaponType.None)
         {
             if (slots[0].type == WeaponType.Melee)
@@ -94,6 +102,35 @@ public class PlayerAttackSystem : MonoBehaviour
                 HandleBombInput();
             }
         }
+    }
+
+    // [추가] 인벤토리에서 포션을 장착하는 함수
+    public void EquipPotionFromInventory(Item item)
+    {
+        if (item == null || item.data == null) return;
+
+        // 1. 새 무기 슬롯 생성
+        WeaponSlot newSlot = new WeaponSlot();
+        newSlot.type = WeaponType.PotionBomb;
+        newSlot.itemData = item.data;
+        newSlot.count = item.quantity; // 현재 개수 반영
+
+        // 프리팹 설정 (ItemData에 프리팹이 있다고 가정하거나 기본값 사용)
+        // 만약 ItemData에 던지는 프리팹이 없다면 defaultBombPrefab 사용
+        newSlot.specificPrefab = defaultBombPrefab;
+
+        // 2. 현재 슬롯(0번)을 교체 (또는 목록에 추가)
+        // 여기서는 "0번 슬롯을 덮어씌우는 방식"으로 구현
+        if (slots.Count > 0)
+        {
+            slots[0] = newSlot;
+        }
+        else
+        {
+            slots.Add(newSlot);
+        }
+
+        Debug.Log($"무기 장착: {item.data.name} ({item.quantity}개)");
     }
 
     void UpdateAimDirection()
@@ -119,18 +156,29 @@ public class PlayerAttackSystem : MonoBehaviour
     IEnumerator MeleeAttackRoutine()
     {
         isAttacking = true;
-
         if (anim != null) anim.SetTrigger("IsAttack");
         yield return null;
         if (anim != null) anim.ResetTrigger("IsAttack");
 
         Vector2 attackPos = (Vector2)transform.position + (aimDirection * tileSize);
-        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPos, tileSize * 0.5f, enemyLayer);
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPos, tileSize * 0.7f, enemyLayer);
 
         foreach (Collider2D hit in hits)
         {
+            // 적 피격 처리
+            EnemyCombat enemy = hit.GetComponent<EnemyCombat>();
+            if (enemy != null)
+            {
+                enemy.EnemyTakeDamage(10);
+                continue;
+            }
+
             BossHealth boss = hit.GetComponent<BossHealth>();
-            if (boss != null) boss.TakeDamage(50, ElementType.None);
+            if (boss != null)
+            {
+                boss.TakeDamage(50, ElementType.None);
+            }
         }
 
         yield return new WaitForSeconds(0.4f);
@@ -139,6 +187,13 @@ public class PlayerAttackSystem : MonoBehaviour
 
     void HandleBombInput()
     {
+        // 소지 개수 체크
+        if (slots[0].count == 0)
+        {
+            Debug.Log("포션이 다 떨어졌습니다!");
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.Z))
         {
             isCharging = true;
@@ -156,7 +211,7 @@ public class PlayerAttackSystem : MonoBehaviour
 
             float duration = Time.time - chargeStartTime;
 
-            // ★ [수정됨] 폭탄 투척 시 무기 소모 로직 적용
+            // 짧게 누르면 1칸, 길게 누르면 스택만큼
             if (duration < 0.5f) SpawnBombAt(1);
             else SpawnBombsByStack();
 
@@ -174,7 +229,7 @@ public class PlayerAttackSystem : MonoBehaviour
             else if (t >= 1.0f) targetStack = 2;
             else if (t >= 0.5f) targetStack = 1;
 
-            // ★ [추가됨] 현재 남은 폭탄 개수보다 더 많이 차징할 수는 없음
+            // 소지 개수보다 많이 던질 순 없음
             if (slots[0].count != -1 && targetStack > slots[0].count)
             {
                 targetStack = slots[0].count;
@@ -184,11 +239,7 @@ public class PlayerAttackSystem : MonoBehaviour
             {
                 Vector2 nextPos = (Vector2)transform.position + (aimDirection * tileSize * (currentStack + 1));
 
-                if (!IsValidTile(nextPos))
-                {
-                    // 설치 불가
-                }
-                else
+                if (IsValidTile(nextPos))
                 {
                     currentStack = targetStack;
                     ShowStackMarker(currentStack);
@@ -198,150 +249,111 @@ public class PlayerAttackSystem : MonoBehaviour
         }
     }
 
+    // [복원됨] 타일 유효성 검사
     bool IsValidTile(Vector2 pos)
     {
         if (floorTilemap != null)
         {
             Vector3Int cellPos = floorTilemap.WorldToCell(pos);
-            if (!floorTilemap.HasTile(cellPos)) return false;
+            // 타일이 존재해야 던질 수 있음 (벽이나 허공 방지)
+            return floorTilemap.HasTile(cellPos);
         }
-
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(pos, tileSize * 0.3f);
-        foreach (var col in hitColliders)
-        {
-            if (col.CompareTag("Obstacle")) return false;
-            if (col.CompareTag("Stairs")) return false;
-        }
-
-        return true;
+        return true; // 타일맵 없으면 그냥 통과
     }
 
-    GameObject GetCurrentBombPrefab()
+    // [복원됨] 스택 마커 표시
+    void ShowStackMarker(int stackIndex)
     {
-        if (slots.Count > 0 && slots[0].specificPrefab != null)
-        {
-            return slots[0].specificPrefab;
-        }
-        return null;
+        if (stackMarkerPrefab == null) return;
+
+        Vector2 spawnPos = (Vector2)transform.position + (aimDirection * tileSize * stackIndex);
+        GameObject marker = Instantiate(stackMarkerPrefab, spawnPos, Quaternion.identity);
+        activeMarkers.Add(marker);
     }
 
-    // ★ [추가됨] 무기 소모 및 재정렬 함수 (기획서 P.19)
-    void ConsumeWeapon(int amount)
-    {
-        // 근접 무기(-1)거나 빈손이면 소모 안 함
-        if (slots[0].count == -1 || slots[0].type == WeaponType.None) return;
-
-        slots[0].count -= amount;
-
-        // 다 썼으면?
-        if (slots[0].count <= 0)
-        {
-            Debug.Log("무기 소모됨! 다음 무기 장착");
-
-            // 1. 현재 슬롯을 비움
-            slots[0] = new WeaponSlot { type = WeaponType.None };
-
-            // 2. 남은 무기들을 앞으로 당김 (순환 아님, 정렬임)
-            ReorganizeSlots();
-        }
-    }
-
-    void SpawnBombAt(int distance)
-    {
-        Vector2 pos = (Vector2)transform.position + (aimDirection * tileSize * distance);
-        GameObject bombToSpawn = GetCurrentBombPrefab();
-
-        if (IsValidTile(pos) && bombToSpawn != null)
-        {
-            Instantiate(bombToSpawn, pos, Quaternion.identity);
-
-            // ★ [추가됨] 1개 소모
-            ConsumeWeapon(1);
-        }
-    }
-
-    void SpawnBombsByStack()
-    {
-        GameObject bombToSpawn = GetCurrentBombPrefab();
-        if (bombToSpawn == null) return;
-
-        // ★ [추가됨] 실제 던질 개수 계산 (남은 개수보다 많이 던질 수 없음)
-        int throwCount = currentStack;
-        if (slots[0].count != -1 && throwCount > slots[0].count)
-        {
-            throwCount = slots[0].count;
-        }
-
-        for (int i = 1; i <= throwCount; i++)
-        {
-            Vector2 pos = (Vector2)transform.position + (aimDirection * tileSize * i);
-            if (!IsValidTile(pos)) break;
-            Instantiate(bombToSpawn, pos, Quaternion.identity);
-        }
-
-        // ★ [추가됨] 던진 만큼 소모
-        ConsumeWeapon(throwCount);
-    }
-
-    void ShowStackMarker(int index)
-    {
-        Vector2 pos = (Vector2)transform.position + (aimDirection * tileSize * index);
-        if (!IsValidTile(pos)) return;
-
-        if (stackMarkerPrefab != null)
-        {
-            GameObject marker = Instantiate(stackMarkerPrefab, pos, Quaternion.identity);
-            activeMarkers.Add(marker);
-        }
-    }
-
+    // [복원됨] 마커 지우기
     void ClearMarkers()
     {
-        foreach (var m in activeMarkers) if (m) Destroy(m);
+        foreach (GameObject marker in activeMarkers)
+        {
+            if (marker != null) Destroy(marker);
+        }
         activeMarkers.Clear();
     }
 
-    // ★ [추가됨] 무기 소모 시 빈칸을 메꾸는 정렬 (C키 회전과 다름)
-    // 기획서 P.19: 슬롯 1 소모 시 -> 슬롯 3이 슬롯 1로 소모 즉시 장착됨 (빈칸 건너뜀)
-    void ReorganizeSlots()
+    // [복원됨] 특정 거리에 폭탄 생성
+    void SpawnBombAt(int distance)
     {
-        List<WeaponSlot> valid = new List<WeaponSlot>();
+        if (slots.Count == 0) return;
 
-        // 유효한 무기만 수집
-        foreach (var s in slots)
+        Vector2 spawnPos = (Vector2)transform.position + (aimDirection * tileSize * distance);
+
+        if (!IsValidTile(spawnPos)) return;
+
+        // 슬롯에 있는 프리팹 사용, 없으면 기본 프리팹 사용
+        GameObject prefabToUse = slots[0].specificPrefab != null ? slots[0].specificPrefab : defaultBombPrefab;
+
+        if (prefabToUse != null)
         {
-            if (s.type != WeaponType.None) valid.Add(s);
-        }
+            GameObject bomb = Instantiate(prefabToUse, spawnPos, Quaternion.identity);
 
-        // 슬롯 4개를 다시 채움 (앞에서부터 채우고 나머지는 None)
-        for (int i = 0; i < 4; i++)
-        {
-            if (i < valid.Count) slots[i] = valid[i];
-            else slots[i] = new WeaponSlot { type = WeaponType.None };
-        }
+            // 폭탄에 데이터 전달 (PotionManager 연동을 위해 PotionData 전달 가능)
+            PotionExplosion explosion = bomb.GetComponent<PotionExplosion>();
+            if (explosion != null && slots[0].itemData is PotionData pData)
+            {
+                // 여기서 Initialize 등을 호출해줄 수 있음
+                // explosion.Initialize(pData, ...); 
+            }
 
-        Debug.Log("무기 자동 정렬 완료: " + slots[0].type);
+            UseAmmo(1);
+        }
     }
 
-    // C키 입력 시 회전 (기존 유지)
-    void RotateWeaponSlots()
+    // ★ [복원됨] 스택만큼 폭탄 생성 (멀티샷)
+    void SpawnBombsByStack()
     {
-        List<WeaponSlot> valid = new List<WeaponSlot>();
-        foreach (var s in slots) if (s.type != WeaponType.None) valid.Add(s);
-
-        if (valid.Count <= 1) return;
-
-        // 맨 앞 무기를 맨 뒤로 보냄 (반시계 회전)
-        WeaponSlot first = valid[0];
-        valid.RemoveAt(0);
-        valid.Add(first);
-
-        for (int i = 0; i < 4; i++)
+        if (currentStack == 0)
         {
-            if (i < valid.Count) slots[i] = valid[i];
-            else slots[i] = new WeaponSlot { type = WeaponType.None };
+            SpawnBombAt(1);
+            return;
         }
 
-        Debug.Log($"무기 교체됨(C키): {slots[0].type}");
+        // 스택 1, 2, 3 위치에 순차적으로 생성
+        for (int i = 1; i <= currentStack; i++)
+        {
+            SpawnBombAt(i);
+        }
+    }
+
+    // 탄약 소모 처리
+    void UseAmmo(int amount)
+    {
+        if (slots[0].count == -1) return; // 무한 탄창
+
+        slots[0].count -= amount;
+
+        // 인벤토리 데이터와 동기화 (선택 사항)
+        if (Inventory.Instance != null && slots[0].itemData != null)
+        {
+            // 인벤토리에서도 개수를 줄이려면 Inventory에 RemoveItem 로직이 필요함
+            // 현재는 PlayerAttackSystem 슬롯 상에서만 줄어듬
+        }
+
+        if (slots[0].count <= 0)
+        {
+            slots[0].count = 0;
+            // 다 쓰면 맨손(Melee)으로 전환할지 여부 결정
+            // slots[0].type = WeaponType.Melee;
+        }
+    }
+
+    void RotateWeaponSlots()
+    {
+        if (slots.Count <= 1) return;
+
+        WeaponSlot first = slots[0];
+        slots.RemoveAt(0);
+        slots.Add(first);
+        Debug.Log($"무기 교체됨: {slots[0].type}");
     }
 }

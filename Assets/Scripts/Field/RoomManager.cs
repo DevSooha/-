@@ -215,10 +215,35 @@ public class RoomManager : MonoBehaviour
 
     private void SetPlayerInput(bool active)
     {
-        // 플레이어 움직임 멈추는 코드 (필요하면 구현)
-        if (player.TryGetComponent<Player>(out var p))
+        if (Player.Instance != null)
         {
-            p.SetCanMove(active);
+            Player.Instance.SetCanMove(active);
         }
+    }
+
+    // ★ [핵심] 플레이어 위치를 기반으로 카메라를 올바른 방 위치로 이동시킴
+    public void SyncCameraToPlayer()
+    {
+        if (player == null)
+        {
+            if (Player.Instance != null) player = Player.Instance.transform;
+            else return;
+        }
+
+        // 1. 플레이어의 현재 위치가 그리드 상에서 어디쯤인지 계산 (반올림)
+        // 예: 플레이어가 (30, 0)에 있으면 -> 32(방폭)로 나눠서 반올림 -> 1번 방이구나!
+        float targetX = Mathf.Round(player.position.x / gridWidth) * gridWidth;
+        float targetY = Mathf.Round(player.position.y / gridHeight) * gridHeight;
+
+        // 2. 카메라 강제 이동
+        if (mainCamera != null)
+        {
+            mainCamera.transform.position = new Vector3(targetX, targetY, -10f);
+            Debug.Log($"룸매니저: 카메라를 ({targetX}, {targetY}) 위치로 강제 이동함!");
+        }
+
+        // 3. (선택사항) 만약 '시작 방'이 엉뚱한 곳에 로딩되는 걸 막으려면
+        // 여기서 currentRoomData를 갱신해주는 로직이 필요하지만, 
+        // 일단 카메라만 맞춰도 게임 진행엔 문제 없습니다.
     }
 }

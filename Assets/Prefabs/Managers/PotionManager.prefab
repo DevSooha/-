@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6844444659212818808}
   - component: {fileID: 6708654765038487619}
-  - component: {fileID: -550055831549695898}
   m_Layer: 0
   m_Name: PotionManager
   m_TagString: Untagged
@@ -48,21 +47,6 @@ MonoBehaviour:
   explosionPrefab: {fileID: 2106239423698665555, guid: 05f624f3da07fc8459f1a479f0ea3212, type: 3}
   bulletPatternPrefab: {fileID: 7070370320491528472, guid: 3b1be7dfe3b260241b0a63ecd7d43232, type: 3}
   bulletPrefabBlue: {fileID: 4447743839898354513, guid: ce9cc11006b632440a4bafe834e81a88, type: 3}
-  bulletPrefabRed: {fileID: 0}
+  bulletPrefabRed: {fileID: 4137174238240989161, guid: 968f9b25ae4cde943905c0a239ad8853, type: 3}
   bulletPrefabGreen: {fileID: 1114039531541617289, guid: 075f27197d573b74ab8c64269aacdde3, type: 3}
   player: {fileID: 5716564795603652699, guid: fcfc7caa39b21004face573b118180d8, type: 3}
---- !u!114 &-550055831549695898
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3404994342112036299}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a2a83dff0dd97549818582dcd2d3ae9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  pastelSpark: {fileID: 11400000, guid: 1c272ea13d62ec7488e91478f355cdd9, type: 2}
-  helioFlare: {fileID: 11400000, guid: a79848556f759ee42936289e0898bcad, type: 2}
-  player: {fileID: 0}

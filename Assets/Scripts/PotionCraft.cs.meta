@@ -1,2 +1,15 @@
 fileFormatVersion: 2
 guid: 9ed9ce1d65dd7b948a3e6b164b2c3223
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - lowTempPotion: {instanceID: 0}
+  - midTempPotion: {instanceID: 0}
+  - highTempPotion: {fileID: 11400000, guid: a79848556f759ee42936289e0898bcad, type: 2}
+  - failureTrash: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

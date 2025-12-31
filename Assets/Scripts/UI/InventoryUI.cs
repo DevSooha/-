@@ -30,7 +30,7 @@ public class InventoryUI : MonoBehaviour
     private int potionCurrentPage = 0;
 
 
-    private void Start()
+    private void Awake()
     {
         InitializeSlots(ItemCategory.Material);
         InitializeSlots(ItemCategory.Potion);
@@ -39,6 +39,15 @@ public class InventoryUI : MonoBehaviour
         potionPageButton.onClick.AddListener(() => NextPotionPage());
         
         RefreshUI();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            bool isActive = gameObject.activeSelf;
+            gameObject.SetActive(!isActive);
+        }
     }
     private void FixedUpdate()
     {
@@ -50,17 +59,23 @@ public class InventoryUI : MonoBehaviour
     {
         int slotCount = (category == ItemCategory.Material) ? slotsPerMaterialPage : slotsPerPotionPage;
         Transform container = (category == ItemCategory.Material) ? materialContainer : potionContainer;
-        
+
         InventorySlot[] slots = new InventorySlot[slotCount];
-        
+
         for (int i = 0; i < slotCount; i++)
         {
             GameObject slotObj = Instantiate(slotPrefab, container);
+
+            RectTransform rect = slotObj.GetComponent<RectTransform>();
+            rect.localScale = Vector3.one;        // 크기를 1로 강제! (제일 중요)
+            rect.localPosition = Vector3.zero;    // 위치를 0으로 (Z축 가출 방지)
+            rect.localRotation = Quaternion.identity; // 회전 초기화
+
             InventorySlot slot = slotObj.GetComponent<InventorySlot>();
             slot.Init(this, i, category);
             slots[i] = slot;
         }
-        
+
         if (category == ItemCategory.Material)
             materialSlots = slots;
         else if (category == ItemCategory.Potion)
@@ -68,7 +83,7 @@ public class InventoryUI : MonoBehaviour
     }
 
 
-     private void NextMaterialPage()
+    private void NextMaterialPage()
     {
         int maxPage = GetMaxPage(ItemCategory.Material, slotsPerMaterialPage);
         materialCurrentPage++;
@@ -88,28 +103,38 @@ public class InventoryUI : MonoBehaviour
 
     public void OnSlotClicked(ItemCategory category, int localIndex)
     {
-        List<Item> allItems = (category == ItemCategory.Material) ? 
+        List<Item> allItems = (category == ItemCategory.Material) ?
             inventory.MaterialItems : inventory.PotionItems;
-        
+
         int currentPage = (category == ItemCategory.Material) ? materialCurrentPage : potionCurrentPage;
         int slotPerPage = (category == ItemCategory.Material) ? slotsPerMaterialPage : slotsPerPotionPage;
-        
+
         int globalIndex = currentPage * slotPerPage + localIndex;
-        
+
         if (globalIndex < 0 || globalIndex >= allItems.Count)
             return;
-        
+
         Item selectedItem = allItems[globalIndex];
         if (selectedItem == null || selectedItem.data == null)
             return;
-        
+
+        // 1. 재료 클릭 시 (크래프팅 UI로 전달)
         if (category == ItemCategory.Material && craftUI != null)
         {
             craftUI.OnMaterialSelected(selectedItem);
         }
+
+        // ★ [수정됨] 포션 장착 연결 부분
         if (category == ItemCategory.Potion)
         {
-            //포션 사용 스크립트
+            // 1. PlayerAttackSystem 찾기
+            PlayerAttackSystem attackSystem = FindFirstObjectByType<PlayerAttackSystem>();
+
+            if (attackSystem != null)
+            {
+                // 2. 장착 함수 호출!
+                attackSystem.EquipPotionFromInventory(selectedItem);
+            }
         }
     }
 

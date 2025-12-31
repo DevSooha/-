@@ -11,6 +11,8 @@ TagManager:
   - Grass
   - Boss
   - Stairs
+  - Campfire
+  - Item
   layers:
   - Default
   - TransparentFX
@@ -60,11 +62,14 @@ TagManager:
   - name: Objects
     uniqueID: 825734181
     locked: 0
-  - name: Characters
-    uniqueID: 2877016291
+  - name: Item
+    uniqueID: 3719288777
     locked: 0
   - name: Enemy
     uniqueID: 1423551967
+    locked: 0
+  - name: Characters
+    uniqueID: 2877016291
     locked: 0
   - name: Foreground
     uniqueID: 680892113

@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 7350284447174679319}
   - component: {fileID: 7627377207163652352}
   - component: {fileID: 5417494034448610523}
-  - component: {fileID: 8288928951358709740}
   - component: {fileID: 4861643094610101404}
   - component: {fileID: 3098275428435461801}
   m_Layer: 7
@@ -153,12 +152,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c3386138b8cfd343be8c3a1f6e1ef36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCombat
-  attackRange: 1.5
-  knockbackForce: 10
-  stunTime: 0.2
-  damageAmount: 1
   enemyHP: 100
-  enemyMaxHP: 100
+  damageAmount: 1
+  worldItemPrefab: {fileID: 5830295574016786778, guid: 91f4e1343eaa7b44ab5bddbb1daf80a7, type: 3}
+  pastelbloomItemData: {fileID: 11400000, guid: 47af1e4c022d9384fbf09692e5150ca4, type: 2}
+  dropAmount: 1
+  dropChance: 1
 --- !u!114 &5417494034448610523
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,18 +179,6 @@ MonoBehaviour:
     m_Bits: 8
   attackCooldown: 2
   attackCooldownTimer: 0
---- !u!114 &8288928951358709740
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5024907885968918689}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 648cb52a653b8524bbcf696eea96c7ef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
 --- !u!95 &4861643094610101404
 Animator:
   serializedVersion: 7

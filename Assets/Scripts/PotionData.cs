@@ -1,17 +1,20 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+// ---------- Enums (기존 유지) ----------
 public enum BulletElement
 {
     Water,
     Fire,
     Lightning
 }
+
 public enum BulletType
 {
     Spiral1,
     Spiral2
 }
+
 public enum PotionEffect
 {
     None,
@@ -22,12 +25,14 @@ public enum PotionEffect
     EnemyStun,
     BulletSpeedDown
 }
+
 public enum BulletEffect
 {
     None,
     Heal,
     Damage
 }
+
 public enum DamageTarget
 {
     Player,
@@ -35,6 +40,7 @@ public enum DamageTarget
     Both
 }
 
+// ---------- 데이터 클래스 ----------
 
 [System.Serializable]
 public class BulletPatternData
@@ -48,7 +54,7 @@ public class BulletPatternData
     public float totalDuration = 8f;
     public BulletType bulletType;
     public BulletElement element;
-    
+
     public DamageTarget damageTarget;
     public BulletEffect bulletEffect;
     public PotionEffect potionEffect;
@@ -61,9 +67,10 @@ public class BulletPatternData
 public class PotionData : ItemData
 {
     [SerializeField] private List<BulletPatternData> patterns = new List<BulletPatternData>();
+
     [SerializeField] public PotionEffect potionEffect;
-    
+
+    public float effectTime = 5.0f;
+
     public List<BulletPatternData> GetPatterns() => patterns;
-    
-    
 }
