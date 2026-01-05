@@ -1,4 +1,5 @@
 using UnityEngine;
+<<<<<<< HEAD
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
@@ -54,10 +55,36 @@ public class UIManager : Singleton<UIManager>
     public void ShowWarning(string message)
     {
         if (messageRoutine != null) StopCoroutine(messageRoutine);
+=======
+using TMPro;
+using System.Collections;
+
+public class UIManager : MonoBehaviour
+{
+    public static UIManager Instance;
+
+    [Header("연결할 UI")]
+    public GameObject messagePanel;
+    public TextMeshProUGUI messageText;
+
+    private Coroutine currentRoutine;
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
+    // [기존] 2초 뒤에 꺼지는 경고창
+    public void ShowWarning(string message)
+    {
+        if (currentRoutine != null) StopCoroutine(currentRoutine);
+>>>>>>> 90c0ad74131c4196343f1315151c27ea4d457ad6
 
         messagePanel.SetActive(true);
         messageText.text = message;
 
+<<<<<<< HEAD
         messageRoutine = StartCoroutine(HideMessageRoutine());
     }
 
@@ -78,9 +105,30 @@ public class UIManager : Singleton<UIManager>
     }
 
     IEnumerator HideMessageRoutine()
+=======
+        currentRoutine = StartCoroutine(HideRoutine());
+    }
+
+    // ★ [추가] 엔딩용: 절대 자동으로 안 꺼짐!
+    public void ShowEnding(string message)
+    {
+        // 혹시 켜져있던 끄기 타이머가 있다면 취소
+        if (currentRoutine != null) StopCoroutine(currentRoutine);
+
+        messagePanel.SetActive(true);
+        messageText.text = message;
+
+        // HideRoutine()을 시작하지 않음 -> 계속 떠 있음
+    }
+
+    IEnumerator HideRoutine()
+>>>>>>> 90c0ad74131c4196343f1315151c27ea4d457ad6
     {
         yield return new WaitForSeconds(2.0f);
         messagePanel.SetActive(false);
     }
+<<<<<<< HEAD
     #endregion
+=======
+>>>>>>> 90c0ad74131c4196343f1315151c27ea4d457ad6
 }

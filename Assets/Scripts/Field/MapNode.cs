@@ -11,8 +11,13 @@ public class MapNode : MonoBehaviour
     public float overrideDistance = 0f;
 
     [Header("차단 메시지 설정")]
+<<<<<<< HEAD
     public string defaultBlockMessage = "The path is blocked.";
     public string lockedMessage = "You cannot flee!";
+=======
+    public string defaultBlockMessage = "길이 막혀 있습니다.";
+    public string lockedMessage = "보스전 중에는 이동할 수 없습니다.";
+>>>>>>> 90c0ad74131c4196343f1315151c27ea4d457ad6
 
     private BoxCollider2D myCollider;
 

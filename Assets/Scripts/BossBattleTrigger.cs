@@ -2,7 +2,13 @@ using UnityEngine;
 
 public class BossBattleTrigger : MonoBehaviour
 {
+<<<<<<< HEAD
     public BossAI linkedBoss;
+=======
+    [Header("프리팹 안에서 직접 연결하세요")]
+    public BossAI linkedBoss;      // 이 방의 보스
+
+>>>>>>> 90c0ad74131c4196343f1315151c27ea4d457ad6
     private bool hasTriggered = false;
 
     private void OnTriggerEnter2D(Collider2D other)
