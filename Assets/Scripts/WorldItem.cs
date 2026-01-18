@@ -1,4 +1,3 @@
-using NUnit.Framework.Interfaces;
 using System.Collections;
 using UnityEngine;
 
@@ -14,6 +13,8 @@ public class WorldItem : MonoBehaviour
     private bool isPlayerInRange = false; // 플레이어가 근처에 있나?
     private Transform playerTransform;    // 플레이어 위치 기억용 (날아가는 연출용)
 
+    private ItemData itemData;
+
     Collider2D col;
 
     void Awake()
@@ -23,13 +24,13 @@ public class WorldItem : MonoBehaviour
         if (col != null) col.isTrigger = true;
     }
 
-    // 적이 드랍할 때 호출
-    //public void Init(ItemData data, int amount)
-    //{
-    //    itemData = data;
-    //    quantity = amount;
-    //    initialized = true;
-    //}
+    //적이 드랍할 때 호출
+    public void Init(ItemData data, int amount)
+    {
+        itemData = data;
+        quantity = amount;
+        initialized = true;
+    }
 
     public void Init(int amount)
     {

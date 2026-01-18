@@ -608,7 +608,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Spawner
   csvFile: {fileID: 4900000, guid: 5ccdce89b00b8394dbc660faf50c0289, type: 3}
   floorTilemap: {fileID: 406906526230620546}
-  worldItemPrefab: {fileID: 5830295574016786778, guid: 91f4e1343eaa7b44ab5bddbb1daf80a7, type: 3}
+  worldItemPrefab: {fileID: 1373428631742137070, guid: 91f4e1343eaa7b44ab5bddbb1daf80a7, type: 3}
   spawnList:
   - itemID: MAT_PLANT_01
     spritePath: dustflare flower
@@ -5642,6 +5642,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 3714201902521846240, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5681149279572575106, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.1
@@ -5693,6 +5697,10 @@ PrefabInstance:
     - target: {fileID: 8845568579499216891, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
       propertyPath: m_Name
       value: tree (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8845568579499216891, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8845568579499216891, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
       propertyPath: m_TagString
@@ -5868,6 +5876,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 3714201902521846240, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5681149279572575106, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 11.5
@@ -5911,6 +5923,10 @@ PrefabInstance:
     - target: {fileID: 8845568579499216891, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
       propertyPath: m_Name
       value: tree (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8845568579499216891, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8845568579499216891, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
       propertyPath: m_TagString
@@ -6094,6 +6110,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 3714201902521846240, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5681149279572575106, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
       propertyPath: m_LocalPosition.x
       value: -9.5
@@ -6137,6 +6157,10 @@ PrefabInstance:
     - target: {fileID: 8845568579499216891, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
       propertyPath: m_Name
       value: tree
+      objectReference: {fileID: 0}
+    - target: {fileID: 8845568579499216891, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
+      propertyPath: m_Layer
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8845568579499216891, guid: 07cd13de87475a249a5c778cb920d6fd, type: 3}
       propertyPath: m_TagString
@@ -6284,8 +6308,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5024907885968918689, guid: c9303eb0c6c614044a955cfc79b6973f, type: 3}
       propertyPath: m_TagString
-      value: Respawn
+      value: Enemy
       objectReference: {fileID: 0}
+    - target: {fileID: 7627377207163652352, guid: c9303eb0c6c614044a955cfc79b6973f, type: 3}
+      propertyPath: worldItemPrefab
+      value: 
+      objectReference: {fileID: 1373428631742137070, guid: 91f4e1343eaa7b44ab5bddbb1daf80a7, type: 3}
+    - target: {fileID: 7627377207163652352, guid: c9303eb0c6c614044a955cfc79b6973f, type: 3}
+      propertyPath: pastelbloomItemData
+      value: 
+      objectReference: {fileID: 11400000, guid: 47af1e4c022d9384fbf09692e5150ca4, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

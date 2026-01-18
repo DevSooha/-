@@ -9,12 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 254b5387ea8dd184bb6e0f8514b28163, type: 3}
+  m_Script: {fileID: 11500000, guid: d59bd60959b40674d815b75ed82e6639, type: 3}
   m_Name: Heliospark
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: Heliospark
+  itemName: Heliospark Flower
   description: "\uD5EC\uB9AC\uC624\uC2A4\uD30C\uD06C \uAF43"
   icon: {fileID: 3853219197296427337, guid: aee330e4550fd844a8adbf1eca7e2e9c, type: 3}
+  specificPrefab: {fileID: 0}
   maxStack: 99
   isStackable: 1
   category: 0

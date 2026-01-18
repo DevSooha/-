@@ -116,14 +116,8 @@ public class EnemyCombat : MonoBehaviour
         //WorldItem이 확실히 있는지 체크 (안전장치)
         if (wi != null)
         {
-            wi.Init(dropAmount);
-
-            SpriteRenderer sr = item.GetComponent<SpriteRenderer>();
-            if (sr != null)
-            {
-                sr.sprite = pastelbloomItemData.icon;
-                sr.sortingLayerName = "Item";
-            }
+            wi.Init(pastelbloomItemData, dropAmount);
+            item.GetComponent<SpriteRenderer>().sprite = pastelbloomItemData.icon;
         }
     }
 }

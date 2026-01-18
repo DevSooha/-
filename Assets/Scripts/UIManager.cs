@@ -280,7 +280,7 @@ public class UIManager : MonoBehaviour
 
     #endregion
 
-    public void GoPotion() { StartCoroutine(LoadSceneWithFade("Potions")); }
+    public void GoPotion() { StartCoroutine(LoadSceneWithFade("Inventory")); }
     public void GoCrafting() { StartCoroutine(LoadSceneWithFade("Crafting")); }
     
 

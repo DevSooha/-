@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 254b5387ea8dd184bb6e0f8514b28163, type: 3}
+  m_Script: {fileID: 11500000, guid: d59bd60959b40674d815b75ed82e6639, type: 3}
   m_Name: Pastelbloom
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: Pastelbloom
-  description: "\uBD04/\uBB3C"
+  itemName: Pastelbloom Spawn
+  description: 
   icon: {fileID: 8140422811112854518, guid: 6a48f8222c89d0946ab027fe749afc99, type: 3}
   specificPrefab: {fileID: 0}
   maxStack: 99

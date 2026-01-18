@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6305491374025012656}
   - component: {fileID: 1648649628416456509}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: Skeleton
   m_TagString: Obstacle
   m_Icon: {fileID: 0}
@@ -25,9 +25,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 775261350587403794}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 1}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5569790205057511594}
@@ -89,7 +89,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5569790205057511594}
   - component: {fileID: 4812511325995141568}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -155,8 +155,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 182476865
-  m_SortingLayer: 2
+  m_SortingLayerID: 825734181
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: -7132593368428001072, guid: 17a9efd03aa128e439af26f8497722d9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
