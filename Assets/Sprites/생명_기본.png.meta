@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Sprites/생명_기본.png.meta
 guid: 93f84df39bb182246abee1d6d81a7675
+========
+guid: cba69661d52cfbb4fa14465b539bf589
+>>>>>>>> origin/main:Assets/Sprites/화살표.png.meta
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -50,7 +54,7 @@ TextureImporter:
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
-  spriteGenerateFallbackPhysicsShape: 1
+  spriteGenerateFallbackPhysicsShape: 0
   alphaUsage: 1
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
@@ -97,6 +101,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
+<<<<<<<< HEAD:Assets/Sprites/생명_기본.png.meta
       name: "\uC0DD\uBA85_\uAE30\uBCF8_0"
       rect:
         serializedVersion: 2
@@ -104,6 +109,15 @@ TextureImporter:
         y: 0
         width: 300
         height: 320
+========
+      name: "\uD654\uC0B4\uD45C_0"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 320
+        height: 640
+>>>>>>>> origin/main:Assets/Sprites/화살표.png.meta
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,8 +126,13 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
+<<<<<<<< HEAD:Assets/Sprites/생명_기본.png.meta
       spriteID: e6a6e2914dc7d0b49a99bcbb7afe62d4
       internalID: 1815925872
+========
+      spriteID: 3095e935380662541ada0a61b8cd9c04
+      internalID: 1242480378
+>>>>>>>> origin/main:Assets/Sprites/화살표.png.meta
       vertices: []
       indices: 
       edges: []
@@ -122,7 +141,11 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
+<<<<<<<< HEAD:Assets/Sprites/생명_기본.png.meta
     spriteID: 739a94d4dbd300d4296dd04508141956
+========
+    spriteID: 81e284151d8df5944964884d827ee517
+>>>>>>>> origin/main:Assets/Sprites/화살표.png.meta
     internalID: 0
     vertices: []
     indices: 
@@ -134,7 +157,11 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
+<<<<<<<< HEAD:Assets/Sprites/생명_기본.png.meta
       "\uC0DD\uBA85_\uAE30\uBCF8_0": 1815925872
+========
+      "\uD654\uC0B4\uD45C_0": 1242480378
+>>>>>>>> origin/main:Assets/Sprites/화살표.png.meta
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
